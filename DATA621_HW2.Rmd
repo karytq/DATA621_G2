@@ -1,0 +1,259 @@
+---
+title: "DATA621_HW2"
+author: "Gabriel Santos"
+date: '2023-02-24'
+output:
+  word_document: default
+  pdf_document: default
+  html_document: default
+---
+
+```{r}
+library(tidyr);
+library(dplyr); 
+library(kableExtra);
+library(ggplot2)
+library(caret)
+library(pROC)
+```
+
+#### 1.Download the classification output data set (attached in Blackboard to the assignment).
+
+Loading the data
+
+```{r}
+git_dir <- 'https://raw.github.com/GabrielSantos33/DATA621_HW2/main/'
+class_data = read.csv(paste(git_dir, "/classification-output-data.csv", sep = ""))
+class_data_subset <- names(class_data) %in% c("class", "scored.class", "scored.probability")
+```
+
+
+```{r}
+head(class_data, 6)
+```
+
+#### 2.The data set has three key columns we will use:
+
+- class: the actual class for the observation
+- scored.class: the predicted class for the observation (based on a threshold of 0.5)
+- scored.probability: the predicted probability of success for the observation
+
+Use the table() function to get the raw confusion matrix for this scored dataset. Make sure you understand
+the output. In particular, do the rows represent the actual or predicted class? The columns?
+
+
+```{r}
+table(class_data$class, class_data$scored.class)
+```
+
+
+#### 3.Write a function that takes the data set as a dataframe, with actual and predicted classifications identified, and returns the accuracy of the predictions.
+
+$$
+\begin{aligned}
+Accuracy = \frac{TP + TN}{TP + FP +TN +FN}
+\end{aligned}
+$$
+
+Function for accuracy and output below:
+
+```{r}
+accuracy <- function(df) {
+  TruePositive <- nrow(df[df$class == 1 & df$scored.class == 1,])
+  TrueNegative <- nrow(df[df$class == 0 & df$scored.class == 0,])
+  FalsePositive <- nrow(df[df$class == 0 & df$scored.class == 1,])
+  FalseNegative <- nrow(df[df$class == 1 & df$scored.class == 0,])
+  
+  acc <- round((TruePositive+TrueNegative)/
+                 (TruePositive+TrueNegative+FalsePositive+FalseNegative), 3)
+   return(acc)
+}
+accuracy(class_data)
+```
+
+#### 4.Write a function that takes the data set as a dataframe, with actual and predicted classifications identified, and returns the classification error rate of the predictions.
+
+$$
+\begin{aligned}
+Classification Error Rate = \frac{FP + FN}{TP + FP +TN +FN}
+\end{aligned}
+$$
+
+```{r}
+classification_error <- function(df) {
+  TruePositive <- nrow(df[df$class == 1 & df$scored.class == 1,])
+  TrueNegative <- nrow(df[df$class == 0 & df$scored.class == 0,])
+  FalsePositive <- nrow(df[df$class == 0 & df$scored.class == 1,])
+  FalseNegative <- nrow(df[df$class == 1 & df$scored.class == 0,])
+  
+  class_error <- round((FalsePositive+FalseNegative)/
+                         (TruePositive+TrueNegative+FalsePositive+FalseNegative), 3)
+  
+  return(class_error)
+}
+classification_error(class_data)
+```
+
+#### 5.Write a function that takes the data set as a dataframe, with actual and predicted classifications identified, and returns the precision of the predictions.
+
+$$
+\begin{aligned}
+Precision = \frac{TP}{TP + FP}
+\end{aligned}
+$$
+
+```{r}
+
+precision <- function(df) {
+  TruePositive <- nrow(df[df$class == 1 & df$scored.class == 1,])
+  TrueNegative <- nrow(df[df$class == 0 & df$scored.class == 0,])
+  FalsePositive <- nrow(df[df$class == 0 & df$scored.class == 1,])
+  FalseNegative <- nrow(df[df$class == 1 & df$scored.class == 0,])
+  
+  prec <- round((TruePositive)/(TruePositive+FalsePositive), 3)
+  
+  return(prec)
+}
+precision(class_data)
+```
+
+#### 6. Write a function that takes the data set as a dataframe, with actual and predicted classifications identified, and returns the sensitivity of the predictions. Sensitivity is also known as recall.
+
+$$
+\begin{aligned}
+Sensitivity = \frac{TP}{TP +FN}
+\end{aligned}
+$$
+
+```{r}
+sensitivity <- function(df) {
+  TruePositive <- nrow(df[df$class == 1 & df$scored.class == 1,])
+  TrueNegative <- nrow(df[df$class == 0 & df$scored.class == 0,])
+  FalsePositive <- nrow(df[df$class == 0 & df$scored.class == 1,])
+  FalseNegative <- nrow(df[df$class == 1 & df$scored.class == 0,])
+  
+  sens <- round((TruePositive)/(TruePositive+FalseNegative), 3)
+  
+  return(sens)
+}
+sensitivity(class_data)
+```
+
+#### 7.Write a function that takes the data set as a dataframe, with actual and predicted classifications identified, and returns the specificity of the predictions.
+
+$$
+\begin{aligned}
+Sensitivity = \frac{TP}{TN +FP}
+\end{aligned}
+$$
+
+```{r}
+
+specificity <- function(df) {
+  TruePositive <- nrow(df[df$class == 1 & df$scored.class == 1,])
+  TrueNegative <- nrow(df[df$class == 0 & df$scored.class == 0,])
+  FalsePositive <- nrow(df[df$class == 0 & df$scored.class == 1,])
+  FalseNegative <- nrow(df[df$class == 1 & df$scored.class == 0,])
+  
+  specs <- round((TrueNegative)/(FalsePositive+TrueNegative), 3)
+  
+  return(specs)
+}
+specificity(class_data)
+```
+
+#### 8.Write a function that takes the data set as a dataframe, with actual and predicted classifications identified, and returns the F1 score of the predictions.
+
+$$
+\begin{aligned}
+F1 score = \frac{2 * Precision * Sensitivity }{Precision + Sensitivity}
+\end{aligned}
+$$
+
+Function to create f1 score below, leveraging above precision and sensitivity functions.
+
+```{r}
+f_one_score <- function(df) {
+  TruePositive <- nrow(df[df$class == 1 & df$scored.class == 1,])
+  TrueNegative <- nrow(df[df$class == 0 & df$scored.class == 0,])
+  FalsePositive <- nrow(df[df$class == 0 & df$scored.class == 1,])
+  FalseNegative <- nrow(df[df$class == 1 & df$scored.class == 0,])
+  
+  f_one <- round((2*precision(df)*sensitivity(df))/
+                   (precision(df)+sensitivity(df)), 3)
+  
+  return(f_one)
+}
+f_one_score(class_data)
+```
+
+#### 9.Before we move on, let's consider a question that was asked: What are the bounds on the F1 score? Show that the F1 score will always be between 0 and 1. (Hint: If 0 < 𝑎 < 1 and 0 < 𝑏 < 1 then 𝑎𝑏 < 𝑎.)
+
+I used runif() function to generate random numbers for precision and sensitivity.
+
+```{r}
+precsision_example <- runif(10, min = 0, max = 1)
+sensitivity_example <- runif(10, min = 0, max = 1)
+f_one_score_example <- (2 * precsision_example * sensitivity_example)/
+  (precsision_example + sensitivity_example)
+summary(f_one_score_example)
+```
+
+#### 10.Write a function that generates an ROC curve from a data set with a true classification column (class in our example) and a probability column (scored.probability in our example). Your function should return a list that includes the plot of the ROC curve and a vector that contains the calculated area under the curve (AUC).Note that I recommend using a sequence of thresholds ranging from 0 to 1 at 0.01 intervals.
+
+
+```{r}
+roc_curve <- function(labels, scores) {
+  labels <- labels[order(scores, decreasing=TRUE)]
+  df <- data.frame(TPR=cumsum(labels)/sum(labels),
+                   FPR=cumsum(!labels)/sum(!labels), labels)
+  
+  ggplot(df,aes(TPR,FPR)) +
+    geom_line(col="blue") +
+    ggtitle('ROC Curve')
+}
+roc_curve(class_data$class, class_data$scored.class)
+```
+
+#### 11.Use your created R functions and the provided classification output data set to produce all of the classification metrics discussed above.
+
+
+```{r}
+all_metrics <- function(df) {
+  accuracy_metric <- accuracy(df)
+  precision_metric <- precision(df)
+  sensitivity_metric <- sensitivity(df)
+  specificity_metric <- specificity(df)
+  f1_score <- f_one_score(df)
+  
+  output_df <- data.frame(accuracy_metric, precision_metric,
+                          sensitivity_metric, specificity_metric,
+                          f1_score)
+  
+  return(output_df)
+}
+all_metrics(class_data)
+```
+
+
+#### 12.Investigate the caret package. In particular, consider the functions confusionMatrix, sensitivity, and specificity. Apply the functions to the data set. How do the results compare with your own functions?
+
+
+```{r}
+confusionMatrix(table(class_data$class, class_data$scored.class),
+                reference = class_data$class)
+```
+The results are very similar, it is useful to use the Caret Package.
+
+#### 13.Investigate the pROC package. Use it to generate an ROC curve for the data set. How do the results compare with your own functions?
+
+
+```{r, message=TRUE}
+roc1 <- roc(class_data$class,
+            class_data$scored.class, percent=TRUE,
+            
+            plot=TRUE, auc.polygon=TRUE, max.auc.polygon=TRUE, grid=TRUE,
+            print.auc=TRUE, show.thres=TRUE)
+```
+
+The results between the pROC package and the function are similar. The pROC package is very complete and gives better results, being better to use.
