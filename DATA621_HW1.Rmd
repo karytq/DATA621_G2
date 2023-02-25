@@ -10,22 +10,21 @@ output:
 
 ```{r  setup, knitr::all_labels(), results='hide', warning=FALSE, message=FALSE }
 knitr::opts_chunk$set(echo = FALSE, class.source = "codechunk")
-library(RCurl)
-library(tidyr)
-library(dplyr) 
+library(mice)
+library(car)
 library(RCurl)
 library(ggplot2)
 library(reshape2)
 library(corrplot)
-library(mice)
-library(car)
 library(reshape)
 library(mixtools)
 library(tidyverse)
 library(GGally)
 library(MASS)
 library(faraway)
-suppressPackageStartupMessages(library("visdat"))
+library(RCurl)
+library(tidyr)
+library(dplyr) 
 ```
 
 ## Problem Statement and Goals
@@ -719,6 +718,8 @@ The predictions were generated using the evaluation set on the Square Root Step 
 The R code that was used in the analyses shown in this report can be viewed here: 
 
 ["RMD code"](https://github.com/GabrielSantos33/DATA621_G2/blob/main/DATA621_HW1.Rmd).
+
+["Rpubs"](https://rpubs.com/GabrielSantos/DATA621_HW_1).
 
 - Thank you.
 
