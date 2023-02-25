@@ -1,12 +1,15 @@
 ---
 title: "DATA621_HW_1"
-author: "Critical group 2: Avery Davidowitz, Josh Iden, Mathew Katz, Tyler Brown, Gabriel Santos, John Ledesma "
-date: "2023-02-11"
-output: html_document
+author: 'Critical group 2: Avery Davidowitz, Josh Iden, Mathew Katz, Tyler Brown,
+  Gabriel Santos, John Ledesma '
+date: '2023-02-11'
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r  setup, knitr::all_labels(), results='hide', warning=FALSE, message=FALSE }
-knitr::opts_chunk$set(echo = TRUE, class.source = "codechunk")
+knitr::opts_chunk$set(echo = FALSE, class.source = "codechunk")
 library(RCurl)
 library(tidyr)
 library(dplyr) 
@@ -224,7 +227,7 @@ The MICE package in R implements a methodology where each incomplete variable is
 
 
 
-Removal of bat_hbp
+Removal of bat_hbp- NA
 
 ```{r Using MICE}
 
@@ -413,7 +416,7 @@ As we can see from the above, the boxcox transformations on the selected feature
 
 Bimodal distributions in data are interesting, in that they represent features which actually contain multiple (2) inherent systems resulting in separated distributional peaks. Figure XX shows that bimodality is present in `bat_so`, `p_hr`, `bat_hr`. While a Box-Cox transformation could have been undertaken in order to transform the bimodal variables to a normal distribution. However, this throws away important information that is inherent in the bimodal variable itself. The fact that the variable is bimodal in the first place is essentially ignored, and the predicted values in the linear multiple regression model will not reflect this bimodality. 
 
-Our approach to solving this is to create dummy variables representing which side of the local minimum each datapoint falls with respect to it's original bimodal distribution. First, two histograms were fit to these variables using the `mixtools` package. Then, the intersection point between the two histograms was determined by [solving for $c$](https://stats.stackexchange.com/questions/103800/calculate-probability-area-under-the-overlapping-area-of-two-normal-distributi). Where
+Our approach to solving this is to create dummy variables representing which side of the local minimum each data point falls with respect to it's original bimodal distribution. First, two histograms were fit to these variables using the `mixtools` package. Then, the intersection point between the two histograms was determined by [solving for $c$](https://stats.stackexchange.com/questions/103800/calculate-probability-area-under-the-overlapping-area-of-two-normal-distributi). Where
 
 $$c = \frac{\mu_2\sigma_1^2 - \sigma_2(\mu_1\sigma_2 + \sigma_1\sqrt{(\mu_1 - \mu_2)^2 + 2(\sigma_1^2 - \sigma_2^2)log\frac{\sigma_1}{\sigma_2}})}{\sigma_1^2 - \sigma_2^2}$$
 Where $\mu_1$ and $\sigma_1$ are the mean and standard deviation for the left distribution and $\nu_2$ and $\sigma_2$ are the mean and standard deviation for the right distribution. 
@@ -509,9 +512,13 @@ for (var in paste("bi_", bimodal_vars, sep = "")){
 
 ### Saber Model
 
-We would like to employ outside analysis in order to engineer new, potentially powerful features. Popularized in the movie "Moneyball", the SABERMETRICS model for baseball analysis includes a feature known as BsR (base runs). This statistic estimates the amount of runs a team should score. 
+We would like to employ outside analysis in order to engineer new, potentially powerful features. Popularized in the movie "Money ball", the SABERMETRICS model for baseball analysis includes a feature known as BsR (base runs). This statistic estimates the amount of runs a team should score. 
 
-(see http://tangotiger.net/wiki_archive/Base_Runs.html for more information). The formula for constructing this metric is as follows:
+Base Runs (BsR) is a run estimator developed by David Smyth in the early 1990s. It was inspired by Bill James' Runs Created, and like Runs Created it is a dynamic model of team run scoring.
+Many different versions of Base Runs have been introduced by several sabermetricians, to accommodate different data sets and philosophies. However, all Base Runs formulas take the form:
+
+A*B/(B + C) + D
+
 
 $$BSR = AB/(B+A)+C$$
 
@@ -560,11 +567,11 @@ corrplot(cor(cor_numeric), method = 'number', type = 'lower', diag = FALSE, numb
 
 These correlation values make much more sense than before. We can see that features no longer have 1.0 correlations, which in general are highly unlikely to occur naturally. The new most correlated (and least correlated) features are as follows:
 
-- p_hr & bat_hr (0.97): This is an interested correlation, as we would not have intitially expected the amount of homeruns allowed to be correlated with the number of homeruns achieved from a team. However, one could make the argument that a team which focuses on offense would similarly be lacking in defense.
+- p_hr & bat_hr (0.97): This is an interested correlation, as we would not have initially expected the amount of home runs allowed to be correlated with the number of home runs achieved from a team. However, one could make the argument that a team which focuses on offense would similarly be lacking in defense.
 
-- bat_1b & bat_so (-0.73): These features are negatively correlated, which makes intuititve sense. If a team has many players making it to base, then conversely we would expect that this team would have less strikeouts at bat.
+- bat_1b & bat_so (-0.73): These features are negatively correlated, which makes intuitive sense. If a team has many players making it to base, then conversely we would expect that this team would have less strikeouts at bat.
 
-- bat_so & p_so (0.87): These features intuitively should not have such high correlation. Similar to above, we would not expect the performance of batter strikeouts to have any relationship to the performance of pitching strikouts on the same team.
+- bat_so & p_so (0.87): These features intuitively should not have such high correlation. Similar to above, we would not expect the performance of batter strikeouts to have any relationship to the performance of pitching strikeouts on the same team.
 
 ### Target correlation plot after cleaning
 
@@ -710,6 +717,12 @@ The predictions were generated using the evaluation set on the Square Root Step 
 ### Appendix
 
 The R code that was used in the analyses shown in this report can be viewed here: 
+
+["RMD code"](https://github.com/GabrielSantos33/DATA621_G2/blob/main/DATA621_HW1.Rmd).
+
+- Thank you.
+
+
 
 ```{r}
 predictions <- predict(mdl_sqrt_step.model, complete_eval_data) ** 2
