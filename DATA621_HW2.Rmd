@@ -1,6 +1,6 @@
 ---
 title: "DATA621_HW2"
-author: "Gabriel Santos"
+author: "Critical group 2: Avery Davidowitz, Josh Iden, Mathew Katz, Tyler Brown, Gabriel Santos, John Ledesma "
 date: '2023-02-24'
 output:
   word_document: default
